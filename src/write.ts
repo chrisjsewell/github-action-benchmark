@@ -5,7 +5,7 @@ import * as core from '@actions/core';
 import * as github from '@actions/github';
 import * as git from './git';
 import { Benchmark, BenchmarkResult } from './extract';
-import { Config, ToolType } from './config';
+import { Config } from './config';
 import { DEFAULT_INDEX_HTML } from './default_index_html';
 
 export type BenchmarkSuites = { [name: string]: Benchmark[] };
@@ -56,23 +56,6 @@ async function addIndexHtmlIfNeeded(dir: string) {
     console.log('Created default index.html at', indexHtml);
 }
 
-function biggerIsBetter(tool: ToolType): boolean {
-    switch (tool) {
-        case 'cargo':
-            return false;
-        case 'go':
-            return false;
-        case 'benchmarkjs':
-            return true;
-        case 'pytest':
-            return true;
-        case 'googlecpp':
-            return false;
-        case 'catch2':
-            return false;
-    }
-}
-
 interface Alert {
     current: BenchmarkResult;
     prev: BenchmarkResult;
@@ -90,9 +73,7 @@ function findAlerts(curSuite: Benchmark, prevSuite: Benchmark, threshold: number
             continue;
         }
 
-        const ratio = biggerIsBetter(curSuite.tool)
-            ? prev.value / current.value // e.g. current=100, prev=200
-            : current.value / prev.value; // e.g. current=200, prev=100
+        const ratio = prev.value / current.value; // e.g. current=100, prev=200
 
         if (ratio > threshold) {
             core.warning(
@@ -160,9 +141,7 @@ function buildComment(benchName: string, curSuite: Benchmark, prevSuite: Benchma
         const prev = prevSuite.benches.find(i => i.name === current.name);
 
         if (prev) {
-            const ratio = biggerIsBetter(curSuite.tool)
-                ? prev.value / current.value // e.g. current=100, prev=200
-                : current.value / prev.value;
+            const ratio = prev.value / current.value; // e.g. current=100, prev=200
 
             line = `| \`${current.name}\` | ${strVal(current)} | ${strVal(prev)} | \`${floatStr(ratio)}\` |`;
         } else {
@@ -360,7 +339,6 @@ async function writeBenchmarkToGitHubPagesWithRetry(
 ): Promise<Benchmark | null> {
     const {
         name,
-        tool,
         ghPagesBranch,
         benchmarkDataDirPath,
         githubToken,
@@ -389,7 +367,7 @@ async function writeBenchmarkToGitHubPagesWithRetry(
 
     await git.cmd('add', dataPath);
     await addIndexHtmlIfNeeded(benchmarkDataDirPath);
-    await git.cmd('commit', '-m', `add ${name} (${tool}) benchmark result for ${bench.commit.id}`);
+    await git.cmd('commit', '-m', `add ${name} benchmark result for ${bench.commit.id}`);
 
     if (githubToken && autoPush) {
         try {

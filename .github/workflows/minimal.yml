@@ -2,7 +2,7 @@ name: Example for minimal setup
 on:
   push:
     branches:
-      - master
+      - develop
 
 jobs:
   benchmark:
@@ -10,18 +10,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-go@v1
+      - uses: actions/setup-python@v1
       - name: Run benchmark
-        run: cd examples/go && go test -bench 'BenchmarkFib' | tee output.txt
+        run: |
+          cd examples/pytest
+          pip install -r requirements.txt
+          pytest bench.py --benchmark-json output.json
       - name: Download previous benchmark data
         uses: actions/cache@v1
         with:
           path: ./cache
           key: ${{ runner.os }}-benchmark
+
       - name: Store benchmark result
-        uses: rhysd/github-action-benchmark@v1
+        uses: chrisjsewell/github-action-benchmark@v1
         with:
-          tool: 'go'
-          output-file-path: examples/go/output.txt
+          output-file-path: examples/pytest/output.json
           external-data-json-path: ./cache/benchmark-data.json
           fail-on-alert: true

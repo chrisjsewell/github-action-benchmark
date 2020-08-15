@@ -3,10 +3,8 @@ import { promises as fs } from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 
-export type ToolType = 'cargo' | 'go' | 'benchmarkjs' | 'pytest' | 'googlecpp' | 'catch2';
 export interface Config {
     name: string;
-    tool: ToolType;
     outputFilePath: string;
     ghPagesBranch: string;
     benchmarkDataDirPath: string;
@@ -24,15 +22,7 @@ export interface Config {
     maxItemsInChart: number | null;
 }
 
-export const VALID_TOOLS: ToolType[] = ['cargo', 'go', 'benchmarkjs', 'pytest', 'googlecpp', 'catch2'];
 const RE_UINT = /^\d+$/;
-
-function validateToolType(tool: string): asserts tool is ToolType {
-    if ((VALID_TOOLS as string[]).includes(tool)) {
-        return;
-    }
-    throw new Error(`Invalid value '${tool}' for 'tool' input. It must be one of ${VALID_TOOLS}`);
-}
 
 function resolvePath(p: string): string {
     if (p.startsWith('~')) {
@@ -204,7 +194,6 @@ function validateAlertThreshold(alertThreshold: number | null, failThreshold: nu
 }
 
 export async function configFromJobInput(): Promise<Config> {
-    const tool: string = core.getInput('tool');
     let outputFilePath: string = core.getInput('output-file-path');
     const ghPagesBranch: string = core.getInput('gh-pages-branch');
     let benchmarkDataDirPath: string = core.getInput('benchmark-data-dir-path');
@@ -222,7 +211,6 @@ export async function configFromJobInput(): Promise<Config> {
     const maxItemsInChart = getUintInput('max-items-in-chart');
     let failThreshold = getPercentageInput('fail-threshold');
 
-    validateToolType(tool);
     outputFilePath = await validateOutputFilePath(outputFilePath);
     validateGhPagesBranch(ghPagesBranch);
     benchmarkDataDirPath = validateBenchmarkDataDirPath(benchmarkDataDirPath);
@@ -246,7 +234,6 @@ export async function configFromJobInput(): Promise<Config> {
 
     return {
         name,
-        tool,
         outputFilePath,
         ghPagesBranch,
         benchmarkDataDirPath,

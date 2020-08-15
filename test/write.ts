@@ -181,7 +181,6 @@ describe('writeBenchmark()', function() {
         const dataJson = 'data.json';
         const defaultCfg: Config = {
             name: 'Test benchmark',
-            tool: 'cargo',
             outputFilePath: 'dummy', // Should not affect
             ghPagesBranch: 'dummy', // Should not affect
             benchmarkDataDirPath: 'dummy', // Should not affect
@@ -232,7 +231,6 @@ describe('writeBenchmark()', function() {
                             {
                                 commit: commit('prev commit id'),
                                 date: lastUpdate - 1000,
-                                tool: 'cargo',
                                 benches: [bench('bench_fib_10', 100)],
                             },
                         ],
@@ -241,7 +239,6 @@ describe('writeBenchmark()', function() {
                 added: {
                     commit: commit('current commit id'),
                     date: lastUpdate,
-                    tool: 'cargo',
                     benches: [bench('bench_fib_10', 135)],
                 },
             },
@@ -252,7 +249,6 @@ describe('writeBenchmark()', function() {
                 added: {
                     commit: commit('current commit id'),
                     date: lastUpdate,
-                    tool: 'cargo',
                     benches: [bench('bench_fib_10', 135)],
                 },
             },
@@ -267,7 +263,6 @@ describe('writeBenchmark()', function() {
                             {
                                 commit: commit('prev commit id'),
                                 date: lastUpdate - 1000,
-                                tool: 'cargo',
                                 benches: [bench('bench_fib_10', 10)],
                             },
                         ],
@@ -276,7 +271,6 @@ describe('writeBenchmark()', function() {
                 added: {
                     commit: commit('current commit id'),
                     date: lastUpdate,
-                    tool: 'cargo',
                     benches: [bench('bench_fib_10', 135)],
                 },
             },
@@ -291,7 +285,6 @@ describe('writeBenchmark()', function() {
                             {
                                 commit: commit('prev commit id'),
                                 date: lastUpdate - 1000,
-                                tool: 'pytest',
                                 benches: [bench('bench_fib_10', 100)],
                             },
                         ],
@@ -299,7 +292,6 @@ describe('writeBenchmark()', function() {
                             {
                                 commit: commit('prev commit id'),
                                 date: lastUpdate - 1000,
-                                tool: 'cargo',
                                 benches: [bench('bench_fib_10', 10)],
                             },
                         ],
@@ -308,12 +300,11 @@ describe('writeBenchmark()', function() {
                 added: {
                     commit: commit('current commit id'),
                     date: lastUpdate,
-                    tool: 'pytest',
                     benches: [bench('bench_fib_10', 135)],
                 },
             },
             {
-                it: 'raises an alert when exceeding threshold 2.0',
+                it: 'raises an alert when exceeding threshold 2.0 (bigger-is-better)',
                 config: defaultCfg,
                 data: {
                     lastUpdate,
@@ -323,46 +314,6 @@ describe('writeBenchmark()', function() {
                             {
                                 commit: commit('prev commit id'),
                                 date: lastUpdate - 1000,
-                                tool: 'go',
-                                benches: [bench('bench_fib_10', 100), bench('bench_fib_20', 10000)],
-                            },
-                        ],
-                    },
-                },
-                added: {
-                    commit: commit('current commit id'),
-                    date: lastUpdate,
-                    tool: 'go',
-                    benches: [bench('bench_fib_10', 210), bench('bench_fib_20', 25000)], // Exceeds 2.0 threshold
-                },
-                error: [
-                    '# :warning: **Performance Alert** :warning:',
-                    '',
-                    "Possible performance regression was detected for benchmark **'Test benchmark'**.",
-                    'Benchmark result of this commit is worse than the previous benchmark result exceeding threshold `2`.',
-                    '',
-                    '| Benchmark suite | Current: current commit id | Previous: prev commit id | Ratio |',
-                    '|-|-|-|-|',
-                    '| `bench_fib_10` | `210` ns/iter (`± 20`) | `100` ns/iter (`± 20`) | `2.10` |',
-                    '| `bench_fib_20` | `25000` ns/iter (`± 20`) | `10000` ns/iter (`± 20`) | `2.50` |',
-                    '',
-                    'This comment was automatically generated by [workflow](https://github.com/user/repo/actions?query=workflow%3AWorkflow%20name) using [github-action-benchmark](https://github.com/marketplace/actions/continuous-benchmark).',
-                    '',
-                    'CC: @user',
-                ],
-            },
-            {
-                it: 'raises an alert with tool whose result value is bigger-is-better',
-                config: defaultCfg,
-                data: {
-                    lastUpdate,
-                    repoUrl,
-                    entries: {
-                        'Test benchmark': [
-                            {
-                                commit: commit('prev commit id'),
-                                date: lastUpdate - 1000,
-                                tool: 'benchmarkjs',
                                 benches: [bench('benchFib10', 100, '+-20', 'ops/sec')],
                             },
                         ],
@@ -371,7 +322,6 @@ describe('writeBenchmark()', function() {
                 added: {
                     commit: commit('current commit id'),
                     date: lastUpdate,
-                    tool: 'benchmarkjs',
                     benches: [bench('benchFib10', 20, '+-20', 'ops/sec')], // ops/sec so bigger is better
                 },
                 error: [
@@ -400,8 +350,7 @@ describe('writeBenchmark()', function() {
                             {
                                 commit: commit('prev commit id'),
                                 date: lastUpdate - 1000,
-                                tool: 'cargo',
-                                benches: [bench('bench_fib_10', 100)],
+                                benches: [bench('bench_fib_10', 210)],
                             },
                         ],
                     },
@@ -409,8 +358,7 @@ describe('writeBenchmark()', function() {
                 added: {
                     commit: commit('current commit id'),
                     date: lastUpdate,
-                    tool: 'cargo',
-                    benches: [bench('bench_fib_10', 210)], // Exceeds 2.0 threshold
+                    benches: [bench('bench_fib_10', 100)], // Exceeds 2.0 threshold
                 },
                 error: [
                     '# :warning: **Performance Alert** :warning:',
@@ -420,7 +368,7 @@ describe('writeBenchmark()', function() {
                     '',
                     '| Benchmark suite | Current: current commit id | Previous: prev commit id | Ratio |',
                     '|-|-|-|-|',
-                    '| `bench_fib_10` | `210` ns/iter (`± 20`) | `100` ns/iter (`± 20`) | `2.10` |',
+                    '| `bench_fib_10` | `100` ns/iter (`± 20`) | `210` ns/iter (`± 20`) | `2.10` |',
                     '',
                     'This comment was automatically generated by [workflow](https://github.com/user/repo/actions?query=workflow%3AWorkflow%20name) using [github-action-benchmark](https://github.com/marketplace/actions/continuous-benchmark).',
                     '',
@@ -438,8 +386,7 @@ describe('writeBenchmark()', function() {
                             {
                                 commit: commit('prev commit id'),
                                 date: lastUpdate - 1000,
-                                tool: 'googlecpp',
-                                benches: [bench('bench_fib_10', 100)],
+                                benches: [bench('bench_fib_10', 210)],
                             },
                         ],
                     },
@@ -447,8 +394,7 @@ describe('writeBenchmark()', function() {
                 added: {
                     commit: commit('current commit id'),
                     date: lastUpdate,
-                    tool: 'googlecpp',
-                    benches: [bench('bench_fib_10', 210)], // Exceeds 2.0 threshold
+                    benches: [bench('bench_fib_10', 100)], // Exceeds 2.0 threshold
                 },
                 error: [
                     '# :warning: **Performance Alert** :warning:',
@@ -458,7 +404,7 @@ describe('writeBenchmark()', function() {
                     '',
                     '| Benchmark suite | Current: current commit id | Previous: prev commit id | Ratio |',
                     '|-|-|-|-|',
-                    '| `bench_fib_10` | `210` ns/iter (`± 20`) | `100` ns/iter (`± 20`) | `2.10` |',
+                    '| `bench_fib_10` | `100` ns/iter (`± 20`) | `210` ns/iter (`± 20`) | `2.10` |',
                     '',
                     'This comment was automatically generated by [workflow](https://github.com/user/repo/actions?query=workflow%3AWorkflow%20name) using [github-action-benchmark](https://github.com/marketplace/actions/continuous-benchmark).',
                 ],
@@ -474,8 +420,7 @@ describe('writeBenchmark()', function() {
                             {
                                 commit: commit('prev commit id'),
                                 date: lastUpdate - 1000,
-                                tool: 'cargo',
-                                benches: [bench('bench_fib_10', 100)],
+                                benches: [bench('bench_fib_10', 210)],
                             },
                         ],
                     },
@@ -483,8 +428,7 @@ describe('writeBenchmark()', function() {
                 added: {
                     commit: commit('current commit id'),
                     date: lastUpdate,
-                    tool: 'cargo',
-                    benches: [bench('bench_fib_10', 210)], // Exceeds 2.0 threshold
+                    benches: [bench('bench_fib_10', 100)], // Exceeds 2.0 threshold
                 },
                 commitComment: 'Comment was generated at https://dummy-comment-url',
             },
@@ -499,8 +443,7 @@ describe('writeBenchmark()', function() {
                             {
                                 commit: commit('prev commit id'),
                                 date: lastUpdate - 1000,
-                                tool: 'cargo',
-                                benches: [bench('bench_fib_10', 100)],
+                                benches: [bench('bench_fib_10', 210)],
                             },
                         ],
                     },
@@ -508,8 +451,7 @@ describe('writeBenchmark()', function() {
                 added: {
                     commit: commit('current commit id'),
                     date: lastUpdate,
-                    tool: 'cargo',
-                    benches: [bench('bench_fib_10', 210)], // Exceeds 2.0 threshold
+                    benches: [bench('bench_fib_10', 100)], // Exceeds 2.0 threshold
                 },
                 error: undefined,
                 commitComment: undefined,
@@ -525,8 +467,7 @@ describe('writeBenchmark()', function() {
                             {
                                 commit: commit('prev commit id'),
                                 date: lastUpdate - 1000,
-                                tool: 'cargo',
-                                benches: [bench('another_bench', 100)],
+                                benches: [bench('another_bench', 210)],
                             },
                         ],
                     },
@@ -534,8 +475,7 @@ describe('writeBenchmark()', function() {
                 added: {
                     commit: commit('current commit id'),
                     date: lastUpdate,
-                    tool: 'cargo',
-                    benches: [bench('bench_fib_10', 210)], // Exceeds 2.0 threshold
+                    benches: [bench('bench_fib_10', 100)], // Exceeds 2.0 threshold
                 },
                 error: undefined,
                 commitComment: undefined,
@@ -552,8 +492,7 @@ describe('writeBenchmark()', function() {
                             {
                                 commit: commit('prev commit id'),
                                 date: lastUpdate - 1000,
-                                tool: 'cargo',
-                                benches: [bench('bench_fib_10', 100)],
+                                benches: [bench('bench_fib_10', 210)],
                             },
                         ],
                     },
@@ -561,8 +500,7 @@ describe('writeBenchmark()', function() {
                 added: {
                     commit: commit('current commit id'),
                     date: lastUpdate,
-                    tool: 'cargo',
-                    benches: [bench('bench_fib_10', 210)], // Exceeds 2.0 threshold
+                    benches: [bench('bench_fib_10', 100)], // Exceeds 2.0 threshold
                 },
                 error: ["'comment-on-alert' input is set but 'github-token' input is not set"],
                 commitComment: undefined,
@@ -578,8 +516,7 @@ describe('writeBenchmark()', function() {
                             {
                                 commit: commit('prev commit id'),
                                 date: lastUpdate - 1000,
-                                tool: 'cargo',
-                                benches: [bench('bench_fib_10', 100)],
+                                benches: [bench('bench_fib_10', 210)],
                             },
                         ],
                     },
@@ -587,8 +524,7 @@ describe('writeBenchmark()', function() {
                 added: {
                     commit: commit('current commit id'),
                     date: lastUpdate,
-                    tool: 'cargo',
-                    benches: [bench('bench_fib_10', 210)], // Exceeds 2.0 threshold
+                    benches: [bench('bench_fib_10', 100)], // Exceeds 2.0 threshold
                 },
                 repoPayload: null,
                 error: ['Repository information is not available in payload: {', '  "repository": null', '}'],
@@ -604,8 +540,7 @@ describe('writeBenchmark()', function() {
                             {
                                 commit: commit('prev commit id'),
                                 date: lastUpdate - 1000,
-                                tool: 'go',
-                                benches: [bench('bench_fib_10', 100), bench('bench_fib_20', 10000)],
+                                benches: [bench('bench_fib_10', 210), bench('bench_fib_20', 25000)],
                             },
                         ],
                     },
@@ -613,8 +548,7 @@ describe('writeBenchmark()', function() {
                 added: {
                     commit: commit('current commit id'),
                     date: lastUpdate,
-                    tool: 'go',
-                    benches: [bench('bench_fib_10', 210), bench('bench_fib_20', 25000)], // Exceeds 2.0 threshold
+                    benches: [bench('bench_fib_10', 100), bench('bench_fib_20', 10000)], // Exceeds 2.0 threshold
                 },
                 // Though first item is truncated due to maxItemsInChart, alert still can be raised since previous data
                 // is obtained before truncating an array of data items.
@@ -626,8 +560,8 @@ describe('writeBenchmark()', function() {
                     '',
                     '| Benchmark suite | Current: current commit id | Previous: prev commit id | Ratio |',
                     '|-|-|-|-|',
-                    '| `bench_fib_10` | `210` ns/iter (`± 20`) | `100` ns/iter (`± 20`) | `2.10` |',
-                    '| `bench_fib_20` | `25000` ns/iter (`± 20`) | `10000` ns/iter (`± 20`) | `2.50` |',
+                    '| `bench_fib_10` | `100` ns/iter (`± 20`) | `210` ns/iter (`± 20`) | `2.10` |',
+                    '| `bench_fib_20` | `10000` ns/iter (`± 20`) | `25000` ns/iter (`± 20`) | `2.50` |',
                     '',
                     'This comment was automatically generated by [workflow](https://github.com/user/repo/actions?query=workflow%3AWorkflow%20name) using [github-action-benchmark](https://github.com/marketplace/actions/continuous-benchmark).',
                     '',
@@ -645,7 +579,6 @@ describe('writeBenchmark()', function() {
                             {
                                 commit: commit('prev commit id'),
                                 date: lastUpdate - 1000,
-                                tool: 'benchmarkjs',
                                 benches: [bench('benchFib10', 100, '+-20', 'ops/sec')],
                             },
                         ],
@@ -654,7 +587,6 @@ describe('writeBenchmark()', function() {
                 added: {
                     commit: commit('current commit id'),
                     date: lastUpdate,
-                    tool: 'benchmarkjs',
                     benches: [bench('benchFib10', 100, '+-20', 'ops/sec')],
                 },
                 error: [
@@ -683,8 +615,7 @@ describe('writeBenchmark()', function() {
                             {
                                 commit: commit('prev commit id'),
                                 date: lastUpdate - 1000,
-                                tool: 'go',
-                                benches: [bench('bench_fib_10', 100)],
+                                benches: [bench('bench_fib_10', 350)],
                             },
                         ],
                     },
@@ -692,8 +623,7 @@ describe('writeBenchmark()', function() {
                 added: {
                     commit: commit('current commit id'),
                     date: lastUpdate,
-                    tool: 'go',
-                    benches: [bench('bench_fib_10', 350)], // Exceeds 3.0 failure threshold
+                    benches: [bench('bench_fib_10', 100)], // Exceeds 3.0 failure threshold
                 },
                 error: [
                     '1 of 1 alerts exceeded the failure threshold `3` specified by fail-threshold input:',
@@ -705,7 +635,7 @@ describe('writeBenchmark()', function() {
                     '',
                     '| Benchmark suite | Current: current commit id | Previous: prev commit id | Ratio |',
                     '|-|-|-|-|',
-                    '| `bench_fib_10` | `350` ns/iter (`± 20`) | `100` ns/iter (`± 20`) | `3.50` |',
+                    '| `bench_fib_10` | `100` ns/iter (`± 20`) | `350` ns/iter (`± 20`) | `3.50` |',
                     '',
                     'This comment was automatically generated by [workflow](https://github.com/user/repo/actions?query=workflow%3AWorkflow%20name) using [github-action-benchmark](https://github.com/marketplace/actions/continuous-benchmark).',
                     '',
@@ -723,8 +653,7 @@ describe('writeBenchmark()', function() {
                             {
                                 commit: commit('prev commit id'),
                                 date: lastUpdate - 1000,
-                                tool: 'go',
-                                benches: [bench('bench_fib_10', 100)],
+                                benches: [bench('bench_fib_10', 210)],
                             },
                         ],
                     },
@@ -732,8 +661,7 @@ describe('writeBenchmark()', function() {
                 added: {
                     commit: commit('current commit id'),
                     date: lastUpdate,
-                    tool: 'go',
-                    benches: [bench('bench_fib_10', 210)], // Exceeds 2.0 threshold
+                    benches: [bench('bench_fib_10', 100)], // Exceeds 2.0 threshold
                 },
                 error: undefined,
             },
@@ -760,14 +688,14 @@ describe('writeBenchmark()', function() {
 
                 const json: DataJson = JSON.parse(await fs.readFile(dataJson, 'utf8'));
 
-                eq(typeof json.lastUpdate, 'number');
-                ok(json.entries[t.config.name]);
+                eq(typeof json.lastUpdate, 'number', 'update type');
+                ok(json.entries[t.config.name], 'entries');
                 const len = json.entries[t.config.name].length;
-                ok(len > 0);
+                ok(len > 0, 'length of entries > 0');
                 eq(json.entries[t.config.name][len - 1], t.added); // Check last item is the newest
 
                 if (t.data !== null) {
-                    ok(json.lastUpdate > t.data.lastUpdate);
+                    ok(json.lastUpdate > t.data.lastUpdate, 'update date');
                     eq(json.repoUrl, t.data.repoUrl);
                     for (const name of Object.keys(t.data.entries)) {
                         const entries = t.data.entries[name];
@@ -788,16 +716,16 @@ describe('writeBenchmark()', function() {
                 }
 
                 if (t.error) {
-                    ok(caughtError);
+                    ok(caughtError, 'caughtError expected');
                     const expected = t.error.join('\n');
                     eq(expected, caughtError.message);
                 }
 
                 if (t.commitComment !== undefined) {
-                    ok(caughtError);
+                    ok(caughtError, 'caughtError expected when commitComment');
                     // Last line is appended only for failure message
                     const messageLines = caughtError.message.split('\n');
-                    ok(messageLines.length > 0);
+                    ok(messageLines.length > 0, 'comment length > 0');
                     const expectedMessage = messageLines.slice(0, -1).join('\n');
                     ok(
                         fakedRepos.spyOpts.length > 0,
@@ -889,7 +817,6 @@ describe('writeBenchmark()', function() {
 
         const defaultCfg: Config = {
             name: 'Test benchmark',
-            tool: 'cargo',
             outputFilePath: 'dummy', // Should not affect
             ghPagesBranch: 'gh-pages',
             benchmarkDataDirPath: 'data-dir', // Should not affect
@@ -929,7 +856,7 @@ describe('writeBenchmark()', function() {
                 fetch ? ['pull', [token, 'gh-pages']] : undefined,
                 ['cmd', ['add', path.join(dir, 'data.js')]],
                 addIndexHtml ? ['cmd', ['add', path.join(dir, 'index.html')]] : undefined,
-                ['cmd', ['commit', '-m', 'add Test benchmark (cargo) benchmark result for current commit id']],
+                ['cmd', ['commit', '-m', 'add Test benchmark benchmark result for current commit id']],
                 autoPush ? ['push', [token, 'gh-pages']] : undefined,
                 ['cmd', ['checkout', '-']], // Return from gh-pages
             ];
@@ -950,7 +877,6 @@ describe('writeBenchmark()', function() {
                 added: {
                     commit: commit('current commit id'),
                     date: lastUpdate,
-                    tool: 'cargo',
                     benches: [bench('bench_fib_10', 135)],
                 },
                 gitHistory: gitHistory(),
@@ -961,7 +887,6 @@ describe('writeBenchmark()', function() {
                 added: {
                     commit: commit('current commit id'),
                     date: lastUpdate,
-                    tool: 'cargo',
                     benches: [bench('bench_fib_10', 135)],
                 },
                 gitHistory: gitHistory({ dir: 'new-data-dir' }),
@@ -972,7 +897,6 @@ describe('writeBenchmark()', function() {
                 added: {
                     commit: commit('current commit id'),
                     date: lastUpdate,
-                    tool: 'cargo',
                     benches: [bench('other_bench_foo', 100)],
                 },
                 gitHistory: gitHistory(),
@@ -983,7 +907,6 @@ describe('writeBenchmark()', function() {
                 added: {
                     commit: commit('current commit id'),
                     date: lastUpdate,
-                    tool: 'cargo',
                     benches: [bench('bench_fib_10', 100)],
                 },
                 gitHistory: gitHistory({ dir: 'with-index-html', addIndexHtml: false }),
@@ -994,7 +917,6 @@ describe('writeBenchmark()', function() {
                 added: {
                     commit: commit('current commit id'),
                     date: lastUpdate,
-                    tool: 'cargo',
                     benches: [bench('bench_fib_10', 135)],
                 },
                 gitHistory: gitHistory({ autoPush: false }),
@@ -1005,7 +927,6 @@ describe('writeBenchmark()', function() {
                 added: {
                     commit: commit('current commit id'),
                     date: lastUpdate,
-                    tool: 'cargo',
                     benches: [bench('bench_fib_10', 135)],
                 },
                 gitHistory: gitHistory({ autoPush: false, token: undefined }),
@@ -1016,7 +937,6 @@ describe('writeBenchmark()', function() {
                 added: {
                     commit: commit('current commit id'),
                     date: lastUpdate,
-                    tool: 'cargo',
                     benches: [bench('bench_fib_10', 135)],
                 },
                 gitHistory: gitHistory({ autoPush: false, token: undefined, fetch: false }),
@@ -1028,7 +948,6 @@ describe('writeBenchmark()', function() {
                 added: {
                     commit: commit('current commit id'),
                     date: lastUpdate,
-                    tool: 'cargo',
                     benches: [bench('bench_fib_10', 135)],
                 },
                 gitHistory: gitHistory({ fetch: false, skipFetch: true }),
@@ -1039,8 +958,7 @@ describe('writeBenchmark()', function() {
                 added: {
                     commit: commit('current commit id'),
                     date: lastUpdate,
-                    tool: 'cargo',
-                    benches: [bench('bench_fib_10', 210)], // Exceeds 2.0 threshold
+                    benches: [bench('bench_fib_10', 20)], // Exceeds 2.0 threshold
                 },
                 gitHistory: gitHistory(),
                 error: [
@@ -1051,7 +969,7 @@ describe('writeBenchmark()', function() {
                     '',
                     '| Benchmark suite | Current: current commit id | Previous: prev commit id | Ratio |',
                     '|-|-|-|-|',
-                    '| `bench_fib_10` | `210` ns/iter (`± 20`) | `100` ns/iter (`± 20`) | `2.10` |',
+                    '| `bench_fib_10` | `20` ns/iter (`± 20`) | `100` ns/iter (`± 20`) | `5` |',
                     '',
                     'This comment was automatically generated by [workflow](https://github.com/user/repo/actions?query=workflow%3AWorkflow%20name) using [github-action-benchmark](https://github.com/marketplace/actions/continuous-benchmark).',
                 ],
@@ -1069,8 +987,7 @@ describe('writeBenchmark()', function() {
                 added: {
                     commit: commit('current commit id'),
                     date: lastUpdate,
-                    tool: 'cargo',
-                    benches: [bench('bench_fib_10', 210)], // Exceeds 2.0 threshold but not exceed 3.0 threshold
+                    benches: [bench('bench_fib_10', 35)], // Exceeds 2.0 threshold but not exceed 3.0 threshold
                 },
                 gitHistory: gitHistory(),
                 error: undefined,
@@ -1200,7 +1117,6 @@ describe('writeBenchmark()', function() {
                 const added: Benchmark = {
                     commit: commit('current commit id'),
                     date: lastUpdate,
-                    tool: 'cargo',
                     benches: [bench('bench_fib_10', 110)],
                 };
 

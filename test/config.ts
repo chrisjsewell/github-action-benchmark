@@ -18,7 +18,7 @@ mock('@actions/core', {
 });
 
 // This line must be called after mocking
-const { configFromJobInput, VALID_TOOLS } = require('../src/config');
+const { configFromJobInput } = require('../src/config');
 
 describe('configFromJobInput()', function() {
     const cwd = process.cwd();
@@ -34,7 +34,6 @@ describe('configFromJobInput()', function() {
 
     const defaultInputs = {
         name: 'Benchmark',
-        tool: 'cargo',
         'output-file-path': 'out.txt',
         'gh-pages-branch': 'gh-pages',
         'benchmark-data-dir-path': '.',
@@ -54,11 +53,6 @@ describe('configFromJobInput()', function() {
             what: 'wrong name',
             inputs: { ...defaultInputs, name: '' },
             expected: /^Error: Name must not be empty$/,
-        },
-        {
-            what: 'wrong tool',
-            inputs: { ...defaultInputs, tool: 'foo' },
-            expected: /^Error: Invalid value 'foo' for 'tool' input/,
         },
         {
             what: 'output file does not exist',
@@ -176,7 +170,6 @@ describe('configFromJobInput()', function() {
 
     interface ExpectedResult {
         name: string;
-        tool: string;
         ghPagesBranch: string;
         githubToken: string | undefined;
         autoPush: boolean;
@@ -192,7 +185,6 @@ describe('configFromJobInput()', function() {
 
     const defaultExpected: ExpectedResult = {
         name: 'Benchmark',
-        tool: 'cargo',
         ghPagesBranch: 'gh-pages',
         autoPush: false,
         skipFetchGhPages: false,
@@ -207,11 +199,11 @@ describe('configFromJobInput()', function() {
     };
 
     const returnedConfigTests = [
-        ...VALID_TOOLS.map((tool: string) => ({
-            what: 'valid tool ' + tool,
-            inputs: { ...defaultInputs, tool },
-            expected: { ...defaultExpected, tool },
-        })),
+        // ...VALID_TOOLS.map((tool: string) => ({
+        //     what: 'valid tool ' + tool,
+        //     inputs: { ...defaultInputs, tool },
+        //     expected: { ...defaultExpected, tool },
+        // })),
         ...([
             ['auto-push', 'autoPush'],
             ['skip-fetch-gh-pages', 'skipFetchGhPages'],
@@ -290,7 +282,6 @@ describe('configFromJobInput()', function() {
             mockInputs(test.inputs);
             const actual = await configFromJobInput();
             A.equal(actual.name, test.expected.name);
-            A.equal(actual.tool, test.expected.tool);
             A.equal(actual.ghPagesBranch, test.expected.ghPagesBranch);
             A.equal(actual.githubToken, test.expected.githubToken);
             A.equal(actual.skipFetchGhPages, test.expected.skipFetchGhPages);
@@ -325,7 +316,6 @@ describe('configFromJobInput()', function() {
 
         const config = await configFromJobInput();
         A.equal(config.name, 'Benchmark');
-        A.equal(config.tool, 'cargo');
         A.ok(path.isAbsolute(config.outputFilePath), config.outputFilePath);
         A.ok(config.outputFilePath.endsWith('out.txt'), config.outputFilePath);
         A.ok(path.isAbsolute(config.benchmarkDataDirPath), config.benchmarkDataDirPath);
