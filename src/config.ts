@@ -24,6 +24,7 @@ export interface Config {
     chartXAxis: 'id' | 'date';
     oneChartGroups: string[];
     overwriteAssets: boolean;
+    metadata: string;
 }
 
 const RE_UINT = /^\d+$/;
@@ -228,6 +229,7 @@ export async function configFromJobInput(): Promise<Config> {
     const oneChartGroups = core.getInput('one-chart-groups').split(',');
     let failThreshold = getPercentageInput('fail-threshold');
     const overwriteAssets = getBoolInput('overwrite-assets');
+    const metadata = core.getInput('metadata');
 
     outputFilePath = await validateOutputFilePath(outputFilePath);
     validateGhPagesBranch(ghPagesBranch);
@@ -272,5 +274,6 @@ export async function configFromJobInput(): Promise<Config> {
         chartXAxis,
         oneChartGroups,
         overwriteAssets,
+        metadata,
     };
 }

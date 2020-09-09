@@ -192,6 +192,7 @@ describe('writeBenchmark()', function() {
             chartXAxis: 'id',
             oneChartGroups: [],
             overwriteAssets: false,
+            metadata: '',
         };
 
         const savedRepository = gitHubContext.payload.repository;
@@ -834,6 +835,7 @@ describe('writeBenchmark()', function() {
             chartXAxis: 'id',
             oneChartGroups: [],
             overwriteAssets: false,
+            metadata: '',
         };
 
         function gitHistory(

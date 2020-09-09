@@ -81,6 +81,10 @@ inputs:
     description: 'Whether to overwrite existing HTML/JS/CSS files on GitHub Pages'
     required: false
     default: 'true'
+  metadata:
+    description: 'Additional metadata to store about the run'
+    required: false
+    default: ''
 
 runs:
   using: 'node12'

@@ -182,6 +182,9 @@ export async function extractResult(config: Config): Promise<Benchmark> {
     const output = await fs.readFile(config.outputFilePath, 'utf8');
 
     const benches = extractPytestResult(output);
+    if (config.metadata !== '') {
+        benches.extra['gh-metadata'] = config.metadata;
+    }
 
     if (benches.results.length === 0) {
         throw new Error(`No benchmark result was found in ${config.outputFilePath}. Benchmark output was '${output}'`);
