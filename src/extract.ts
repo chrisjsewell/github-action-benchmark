@@ -183,7 +183,7 @@ export async function extractResult(config: Config): Promise<Benchmark> {
 
     const benches = extractPytestResult(output);
     if (config.metadata !== '') {
-        benches.extra['gh-metadata'] = config.metadata;
+        benches.extra['metadata'] = config.metadata;
     }
 
     if (benches.results.length === 0) {

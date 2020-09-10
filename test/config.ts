@@ -45,9 +45,7 @@ describe('configFromJobInput()', function() {
         'fail-on-alert': 'false',
         'alert-comment-cc-users': '',
         'external-data-json-path': '',
-        'max-items-in-chart': '',
-        'one-chart-groups': '',
-        'chart-xaxis': 'id',
+        'max-data-items': '',
     };
 
     const validation_tests = [
@@ -119,20 +117,20 @@ describe('configFromJobInput()', function() {
             expected: /auto-push must be false when external-data-json-path is set/,
         },
         {
-            what: 'invalid integer value for max-items-in-chart',
+            what: 'invalid integer value for max-data-items',
             inputs: {
                 ...defaultInputs,
-                'max-items-in-chart': '3.14',
+                'max-data-items': '3.14',
             },
-            expected: /'max-items-in-chart' input must be unsigned integer but got '3.14'/,
+            expected: /'max-data-items' input must be unsigned integer but got '3.14'/,
         },
         {
-            what: 'max-items-in-chart must not be zero',
+            what: 'max-data-items must not be zero',
             inputs: {
                 ...defaultInputs,
-                'max-items-in-chart': '0',
+                'max-data-items': '0',
             },
-            expected: /'max-items-in-chart' input value must be one or more/,
+            expected: /'max-data-items' input value must be one or more/,
         },
         {
             what: 'alert-threshold must not be empty',
@@ -156,6 +154,16 @@ describe('configFromJobInput()', function() {
             what: 'fail-threshold is smaller than alert-threshold',
             inputs: { ...defaultInputs, 'alert-threshold': '150%', 'fail-threshold': '120%' },
             expected: /'alert-threshold' value must be smaller than 'fail-threshold' value but got 1.5 > 1.2/,
+        },
+        {
+            what: 'fail on non-existent config path',
+            inputs: { ...defaultInputs, 'render-json-path': 'none' },
+            expected: /Invalid value for 'render-json-path' input/,
+        },
+        {
+            what: 'fail on config file that is not JSON',
+            inputs: { ...defaultInputs, 'render-json-path': 'out.txt' },
+            expected: /Invalid value for 'render-json-path' input/,
         },
     ] as Array<{
         what: string;
@@ -181,7 +189,8 @@ describe('configFromJobInput()', function() {
         failOnAlert: boolean;
         alertCommentCcUsers: string[];
         hasExternalDataJsonPath: boolean;
-        maxItemsInChart: null | number;
+        hasConfigJsonPath: boolean;
+        maxItemsInSuite: null | number;
         failThreshold: number | null;
     }
 
@@ -196,7 +205,8 @@ describe('configFromJobInput()', function() {
         failOnAlert: false,
         alertCommentCcUsers: [],
         hasExternalDataJsonPath: false,
-        maxItemsInChart: null,
+        hasConfigJsonPath: false,
+        maxItemsInSuite: null,
         failThreshold: null,
     };
 
@@ -254,9 +264,14 @@ describe('configFromJobInput()', function() {
             expected: { ...defaultExpected, hasExternalDataJsonPath: true },
         },
         {
+            what: 'config JSON file',
+            inputs: { ...defaultInputs, 'render-json-path': 'external.json' },
+            expected: { ...defaultExpected, hasConfigJsonPath: true },
+        },
+        {
             what: 'max items in chart',
-            inputs: { ...defaultInputs, 'max-items-in-chart': '50' },
-            expected: { ...defaultExpected, maxItemsInChart: 50 },
+            inputs: { ...defaultInputs, 'max-data-items': '50' },
+            expected: { ...defaultExpected, maxItemsInSuite: 50 },
         },
         {
             what: 'different failure threshold from alert threshold',
@@ -293,7 +308,7 @@ describe('configFromJobInput()', function() {
             A.deepEqual(actual.alertCommentCcUsers, test.expected.alertCommentCcUsers);
             A.ok(path.isAbsolute(actual.outputFilePath), actual.outputFilePath);
             A.ok(path.isAbsolute(actual.benchmarkDataDirPath), actual.benchmarkDataDirPath);
-            A.equal(actual.maxItemsInChart, test.expected.maxItemsInChart);
+            A.equal(actual.maxItemsInSuite, test.expected.maxItemsInSuite);
             if (test.expected.failThreshold === null) {
                 A.equal(actual.failThreshold, test.expected.alertThreshold);
             } else {
@@ -305,6 +320,13 @@ describe('configFromJobInput()', function() {
                 A.ok(path.isAbsolute(actual.externalDataJsonPath), actual.externalDataJsonPath);
             } else {
                 A.equal(actual.externalDataJsonPath, undefined);
+            }
+
+            if (test.expected.hasConfigJsonPath) {
+                A.equal(typeof actual.configDataJsonPath, 'string');
+                A.ok(path.isAbsolute(actual.configDataJsonPath), actual.configDataJsonPath);
+            } else {
+                A.equal(actual.configDataJsonPath, undefined);
             }
         });
     }

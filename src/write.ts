@@ -16,10 +16,7 @@ export interface DataJson {
     entries: BenchmarkSuites;
 }
 interface Assets {
-    index: string;
-    js: string;
-    funcs: string;
-    css: string;
+    [filename: string]: string;
 }
 
 export const SCRIPT_PREFIX = 'window.BENCHMARK_DATA = ';
@@ -302,8 +299,6 @@ function addBenchmarkToDataJson(benchName: string, bench: Benchmark, data: DataJ
     let prevBench: Benchmark | null = null;
     data.lastUpdate = Date.now();
     data.repoUrl = htmlUrl;
-    data.xAxis = config.chartXAxis;
-    data.oneChartGroups = config.oneChartGroups;
 
     // Add benchmark result
     if (data.entries[benchName] === undefined) {
@@ -321,11 +316,12 @@ function addBenchmarkToDataJson(benchName: string, bench: Benchmark, data: DataJ
 
         suites.push(bench);
 
-        const { maxItemsInChart } = config;
-        if (maxItemsInChart !== null && suites.length > maxItemsInChart) {
-            suites.splice(0, suites.length - maxItemsInChart);
+        const { maxItemsInSuite } = config;
+        if (maxItemsInSuite !== null && suites.length > maxItemsInSuite) {
+            // TODO is this truncating from the wrong end?
+            suites.splice(0, suites.length - maxItemsInSuite);
             core.debug(
-                `Number of data items for '${benchName}' was truncated to ${maxItemsInChart} due to max-items-in-charts`,
+                `Number of data items for '${benchName}' was truncated to ${maxItemsInSuite} due to max-data-items`,
             );
         }
     }
@@ -377,10 +373,9 @@ async function writeBenchmarkToGitHubPagesWithRetry(
 
     await git.cmd('add', dataPath);
 
-    await addFileToGHPages(benchmarkDataDirPath, 'index.html', assets.index, overwriteAssets);
-    await addFileToGHPages(benchmarkDataDirPath, 'benchmark.css', assets.css, overwriteAssets);
-    await addFileToGHPages(benchmarkDataDirPath, 'main.js', assets.js, overwriteAssets);
-    await addFileToGHPages(benchmarkDataDirPath, 'funcs.js', assets.funcs, overwriteAssets);
+    for (const [filename, content] of Object.entries(assets)) {
+        await addFileToGHPages(benchmarkDataDirPath, filename, content, overwriteAssets);
+    }
 
     await git.cmd(
         'commit',
@@ -429,12 +424,18 @@ async function writeBenchmarkToGitHubPagesWithRetry(
 async function writeBenchmarkToGitHubPages(bench: Benchmark, config: Config): Promise<Benchmark | null> {
     const { ghPagesBranch, skipFetchGhPages } = config;
     // note: assets need to be read before switching branch
+
     const assets: Assets = {
-        index: await fs.readFile(path.join(__dirname, 'assets/index.html'), 'utf8'),
-        css: await fs.readFile(path.join(__dirname, 'assets/benchmark.css'), 'utf8'),
-        js: await fs.readFile(path.join(__dirname, 'assets/main.js'), 'utf8'),
-        funcs: await fs.readFile(path.join(__dirname, 'assets/funcs.js'), 'utf8'),
+        'index.html': await fs.readFile(path.join(__dirname, 'assets/index.html'), 'utf8'),
+        'benchmark.css': await fs.readFile(path.join(__dirname, 'assets/benchmark.css'), 'utf8'),
+        'main.js': await fs.readFile(path.join(__dirname, 'assets/main.js'), 'utf8'),
+        'funcs.js': await fs.readFile(path.join(__dirname, 'assets/funcs.js'), 'utf8'),
     };
+    if (config.configDataJsonPath) {
+        assets['config.js'] = 'window.CONFIGURATION_DATA = ' + (await fs.readFile(config.configDataJsonPath, 'utf8'));
+    } else {
+        assets['config.js'] = 'window.CONFIGURATION_DATA = {}';
+    }
     if (!skipFetchGhPages) {
         await git.cmd('fetch', 'origin', `${ghPagesBranch}:${ghPagesBranch}`);
     }

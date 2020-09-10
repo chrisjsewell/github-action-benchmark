@@ -14,3 +14,4 @@
 /coverage
 .vscode/
 src/assets/data.js
+src/assets/config.js

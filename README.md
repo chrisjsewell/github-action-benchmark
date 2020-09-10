@@ -16,6 +16,8 @@ It is hoped that eventually some/all of the features will be fed upstream:
 11. Add `overwrite-assets` option, as to whether these assets should be overridden.
 12. Add `metadata` option, to capture additional information from the github action run (like dependency/docker versions).
 
+renamed `max-items-in-chart` -> `max-data-items`
+
 ## Development Notes
 
 To run the test suite, install the modules, compile the TS and run mocha:
@@ -29,8 +31,8 @@ You can also get the test coverage: `npm run coverage`
 
 To fix linting issues: `npm run fix`
 
-For developing the webpage and associated JS/CSS, you can serve the assets: `npm serve`.
-Note, that this requires you place a `data.js` object in `src/assets`.
+For developing the webpage and associated JS/CSS, you can serve the assets: `npm run serve`.
+Note, that this requires you place a `data.js` and `config.js` object in `src/assets`.
 
 To "release" a GH actions version, you need to create a branch containing all the compiled JS + node_modules.
 To do this (or to update a release branch), first make sure the branch has been created,

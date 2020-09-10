@@ -1,5 +1,8 @@
+// DOM independent functions module 
+
 'use strict';
 
+// convert the entries to to a map: {group-key: {test-name: data, ...}, ...}
 export function collectBenchesPerTestCasePerGroup(entries) {
     const map = new Map();
     for (const entry of entries) {
@@ -122,6 +125,17 @@ export function renderGraph(canvas, dataset, labels, xAxis, alpha = 60, labelStr
             const url = data.commit.url;
             window.open(url, '_blank');
         },
+        plugins: {
+            zoom: {
+                // pan: {
+                //     enabled: true
+                // },
+                zoom: {
+                    enabled: true,
+                    drag: true
+                }
+            }
+        }
     };
     new Chart(canvas, {
         type: 'line',

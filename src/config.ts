@@ -20,9 +20,8 @@ export interface Config {
     failThreshold: number;
     alertCommentCcUsers: string[];
     externalDataJsonPath: string | undefined;
-    maxItemsInChart: number | null;
-    chartXAxis: 'id' | 'date';
-    oneChartGroups: string[];
+    configDataJsonPath: string | undefined;
+    maxItemsInSuite: number | null;
     overwriteAssets: boolean;
     metadata: string;
 }
@@ -62,6 +61,18 @@ async function validateOutputFilePath(filePath: string): Promise<string> {
         return await resolveFilePath(filePath);
     } catch (err) {
         throw new Error(`Invalid value for 'output-file-path' input: ${err}`);
+    }
+}
+
+async function validateConfigFilePath(filePath: string): Promise<string> {
+    try {
+        const path = await resolveFilePath(filePath);
+        const content = await fs.readFile(path, 'utf8');
+        JSON.parse(content);
+        // TODO validate against JSON schema
+        return path;
+    } catch (err) {
+        throw new Error(`Invalid value for 'render-json-path' input: ${err}`);
     }
 }
 
@@ -181,9 +192,9 @@ function getUintInput(name: string): number | null {
     return i;
 }
 
-function validateMaxItemsInChart(max: number | null) {
+function validateMaxItemsInSuite(max: number | null) {
     if (max !== null && max <= 0) {
-        throw new Error(`'max-items-in-chart' input value must be one or more but got ${max}`);
+        throw new Error(`'max-data-items' input value must be one or more but got ${max}`);
     }
 }
 
@@ -198,15 +209,15 @@ function validateAlertThreshold(alertThreshold: number | null, failThreshold: nu
     }
 }
 
-function validateChartXAxis(chartXAxis: string): 'id' | 'date' {
-    if (chartXAxis === 'id') {
-        return chartXAxis;
-    }
-    if (chartXAxis === 'date') {
-        return chartXAxis;
-    }
-    throw new Error(`'chart-xaxis' value must be 'id' or 'date' but got ${chartXAxis}`);
-}
+// function validateChartXAxis(chartXAxis: string): 'id' | 'date' {
+//     if (chartXAxis === 'id') {
+//         return chartXAxis;
+//     }
+//     if (chartXAxis === 'date') {
+//         return chartXAxis;
+//     }
+//     throw new Error(`'chart-xaxis' value must be 'id' or 'date' but got ${chartXAxis}`);
+// }
 
 export async function configFromJobInput(): Promise<Config> {
     let outputFilePath: string = core.getInput('output-file-path');
@@ -223,15 +234,17 @@ export async function configFromJobInput(): Promise<Config> {
     const alertThreshold = getPercentageInput('alert-threshold');
     const failOnAlert = getBoolInput('fail-on-alert');
     const alertCommentCcUsers = getCommaSeparatedInput('alert-comment-cc-users');
+    const maxItemsInSuite = getUintInput('max-data-items');
     let externalDataJsonPath: undefined | string = core.getInput('external-data-json-path');
-    const maxItemsInChart = getUintInput('max-items-in-chart');
-    const chartXAxisValue = core.getInput('chart-xaxis');
-    const oneChartGroups = core.getInput('one-chart-groups').split(',');
+    let configDataJsonPath: undefined | string = core.getInput('render-json-path');
     let failThreshold = getPercentageInput('fail-threshold');
     const overwriteAssets = getBoolInput('overwrite-assets');
     const metadata = core.getInput('metadata');
 
     outputFilePath = await validateOutputFilePath(outputFilePath);
+    if (configDataJsonPath !== undefined) {
+        configDataJsonPath = await validateConfigFilePath(configDataJsonPath);
+    }
     validateGhPagesBranch(ghPagesBranch);
     benchmarkDataDirPath = validateBenchmarkDataDirPath(benchmarkDataDirPath);
     validateName(name);
@@ -247,11 +260,10 @@ export async function configFromJobInput(): Promise<Config> {
     validateAlertThreshold(alertThreshold, failThreshold);
     validateAlertCommentCcUsers(alertCommentCcUsers);
     externalDataJsonPath = await validateExternalDataJsonPath(externalDataJsonPath, autoPush);
-    validateMaxItemsInChart(maxItemsInChart);
+    validateMaxItemsInSuite(maxItemsInSuite);
     if (failThreshold === null) {
         failThreshold = alertThreshold;
     }
-    const chartXAxis = validateChartXAxis(chartXAxisValue);
 
     return {
         name,
@@ -268,11 +280,10 @@ export async function configFromJobInput(): Promise<Config> {
         alertThreshold,
         failOnAlert,
         alertCommentCcUsers,
+        maxItemsInSuite,
         externalDataJsonPath,
-        maxItemsInChart,
+        configDataJsonPath,
         failThreshold,
-        chartXAxis,
-        oneChartGroups,
         overwriteAssets,
         metadata,
     };

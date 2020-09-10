@@ -187,10 +187,9 @@ describe('writeBenchmark()', function() {
             failOnAlert: true,
             alertCommentCcUsers: ['@user'],
             externalDataJsonPath: dataJson,
-            maxItemsInChart: null,
+            configDataJsonPath: undefined,
+            maxItemsInSuite: null,
             failThreshold: 2.0,
-            chartXAxis: 'id',
-            oneChartGroups: [],
             overwriteAssets: false,
             metadata: '',
         };
@@ -527,8 +526,8 @@ describe('writeBenchmark()', function() {
                 error: ['Repository information is not available in payload: {', '  "repository": null', '}'],
             },
             {
-                it: 'truncates data items if it exceeds max-items-in-chart',
-                config: { ...defaultCfg, maxItemsInChart: 1 },
+                it: 'truncates data items if it exceeds max-data-items',
+                config: { ...defaultCfg, maxItemsInSuite: 1 },
                 data: {
                     lastUpdate,
                     repoUrl,
@@ -547,7 +546,7 @@ describe('writeBenchmark()', function() {
                     date: lastUpdate,
                     benches: [bench('bench_fib_10', 100), bench('bench_fib_20', 10000)], // Exceeds 2.0 threshold
                 },
-                // Though first item is truncated due to maxItemsInChart, alert still can be raised since previous data
+                // Though first item is truncated due to maxItemsInSuite, alert still can be raised since previous data
                 // is obtained before truncating an array of data items.
                 error: [
                     '# :warning: **Performance Alert** :warning:',
@@ -697,12 +696,12 @@ describe('writeBenchmark()', function() {
                     for (const name of Object.keys(t.data.entries)) {
                         const entries = t.data.entries[name];
                         if (name === t.config.name) {
-                            if (t.config.maxItemsInChart === null || len < t.config.maxItemsInChart) {
+                            if (t.config.maxItemsInSuite === null || len < t.config.maxItemsInSuite) {
                                 eq(len, entries.length + 1, name);
                                 // Check benchmark data except for the last appended one are not modified
                                 eq(json.entries[name].slice(0, -1), entries, name);
                             } else {
-                                // When data items was truncated due to max-items-in-chart
+                                // When data items was truncated due to max-data-items
                                 eq(len, entries.length, name); // Number of items did not change because first item was shifted
                                 eq(json.entries[name].slice(0, -1), entries.slice(1), name);
                             }
@@ -779,6 +778,7 @@ describe('writeBenchmark()', function() {
                 path.join('data-dir', 'benchmark.css'),
                 path.join('data-dir', 'main.js'),
                 path.join('data-dir', 'funcs.js'),
+                path.join('data-dir', 'config.js'),
                 'new-data-dir',
                 path.join('with-index-html', 'data.js'),
             ]) {
@@ -830,10 +830,9 @@ describe('writeBenchmark()', function() {
             failOnAlert: true,
             alertCommentCcUsers: [],
             externalDataJsonPath: undefined,
-            maxItemsInChart: null,
+            configDataJsonPath: undefined,
+            maxItemsInSuite: null,
             failThreshold: 2.0,
-            chartXAxis: 'id',
-            oneChartGroups: [],
             overwriteAssets: false,
             metadata: '',
         };
@@ -863,6 +862,7 @@ describe('writeBenchmark()', function() {
                 addIndexHtml ? ['cmd', ['add', path.join(dir, 'benchmark.css')]] : undefined,
                 addIndexHtml ? ['cmd', ['add', path.join(dir, 'main.js')]] : undefined,
                 addIndexHtml ? ['cmd', ['add', path.join(dir, 'funcs.js')]] : undefined,
+                addIndexHtml ? ['cmd', ['add', path.join(dir, 'config.js')]] : undefined,
                 ['cmd', ['commit', '-m', 'add Test benchmark benchmark result for current commit id']],
                 autoPush ? ['push', [token, 'gh-pages']] : undefined,
                 ['cmd', ['checkout', '-']], // Return from gh-pages

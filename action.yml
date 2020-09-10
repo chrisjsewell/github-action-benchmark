@@ -66,17 +66,12 @@ inputs:
   external-data-json-path:
     description: 'JSON data file for storing benchmark results. When this input is set, github-action-benchmark no longer uses Git branch to store data. Instead, it reads and appends benchmark data from/to the file. User must store the file anywhere'
     required: false
-  max-items-in-chart:
-    description: 'Max data points in a benchmark chart to avoid making the chart too busy. Value must be unsigned integer. No limit by default'
+  max-data-items:
+    description: 'Max data points to store per test suite. No limit by default, otherwise data will be truncated.'
     required: false
-  chart-xaxis:
-    description: 'X-axis labels to use, commit "id" or "date"'
+  render-json-path:
+    description: 'A path to a file which contains the configuration JSON for rendering results.'
     required: false
-    default: id
-  one-chart-groups:
-    description: 'Benchmark groups (comma-delimited) whose tests should be plotted together on a single chart'
-    required: false
-    default: ''
   overwrite-assets:
     description: 'Whether to overwrite existing HTML/JS/CSS files on GitHub Pages'
     required: false
