@@ -2,7 +2,7 @@
     "suites": {
         "Python Benchmark with pytest-benchmark": {
             "header": "Test Suite Title",
-            "description": "Description of test suite.",
+            "description": "Description of test suite."
         }
     },
     "groups": {
