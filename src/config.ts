@@ -64,7 +64,10 @@ async function validateOutputFilePath(filePath: string): Promise<string> {
     }
 }
 
-async function validateConfigFilePath(filePath: string): Promise<string> {
+async function validateConfigFilePath(filePath: string | undefined): Promise<string | undefined> {
+    if (!filePath) {
+        return Promise.resolve(undefined);
+    }
     try {
         const path = await resolveFilePath(filePath);
         const content = await fs.readFile(path, 'utf8');
@@ -242,9 +245,6 @@ export async function configFromJobInput(): Promise<Config> {
     const metadata = core.getInput('metadata');
 
     outputFilePath = await validateOutputFilePath(outputFilePath);
-    if (configDataJsonPath !== undefined) {
-        configDataJsonPath = await validateConfigFilePath(configDataJsonPath);
-    }
     validateGhPagesBranch(ghPagesBranch);
     benchmarkDataDirPath = validateBenchmarkDataDirPath(benchmarkDataDirPath);
     validateName(name);
@@ -260,6 +260,7 @@ export async function configFromJobInput(): Promise<Config> {
     validateAlertThreshold(alertThreshold, failThreshold);
     validateAlertCommentCcUsers(alertCommentCcUsers);
     externalDataJsonPath = await validateExternalDataJsonPath(externalDataJsonPath, autoPush);
+    configDataJsonPath = await validateConfigFilePath(configDataJsonPath);
     validateMaxItemsInSuite(maxItemsInSuite);
     if (failThreshold === null) {
         failThreshold = alertThreshold;
