@@ -16,7 +16,7 @@ It is hoped that eventually some/all of the features will be fed upstream:
 11. Add `overwrite-assets` option, as to whether these assets should be overridden.
 12. Add `metadata` option, to capture additional information from the github action run (like dependency/docker versions).
 
-renamed `max-items-in-chart` -> `max-data-items`
+renamed `max-items-in-chart` -> `max-data-items`, to better describe its function
 
 ## Development Notes
 

@@ -62,10 +62,10 @@ jobs:
         with:
           name: Python Benchmark
           output-file-path: examples/pytest/output.json
+          render-json-path: .github/workflows/pytest-config.json
           skip-fetch-gh-pages: true
           fail-on-alert: true
           commit-msg-append: append
-          one-chart-groups: group1
       - run: node ./scripts/ci_validate_modification.js before_data.js 'Python Benchmark'
 
   only-alert-with-cache:
