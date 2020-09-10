@@ -10,7 +10,7 @@ It is hoped that eventually some/all of the features will be fed upstream:
    - This data is all shown in the data point's tooltip
 
 2. The group name is saved for each test (see [pytest-benchmark markers](https://pytest-benchmark.readthedocs.io/en/latest/usage.html#markers)), or `null` if no group is given.
-   In the web-page rendering, tests are then arranged by the group they are in, which can be given a sub-heading, description, etc, and also a group can be "consolidated" into a single chart.
+   In the web-page rendering, tests are then arranged by the group they are in, which can be given a sub-heading, description, etc, and also a group can be "consolidated" into a single chart (with handling of differing data points).
 
 3. A new `render-json-path` allows for a JSON file to be copied, which is used to configure the rendered web-page, e.g. for certain test suites and groups:
 
@@ -27,7 +27,8 @@ It is hoped that eventually some/all of the features will be fed upstream:
                 "header": "Group 1 Title",
                 "description": "Description of group 1.",
                 "single_chart": true,
-                "xAxis": "date"
+                "xAxis": "date",
+                "backgroundFill": false
             }
         }
     }
@@ -38,7 +39,12 @@ It is hoped that eventually some/all of the features will be fed upstream:
    - Adding `npm run serve`, for local development of output web-page (using [light-server](https://www.npmjs.com/package/light-server))
    - Adding `overwrite-assets` option, to specify whether any existing assets should be overridden during a commit to `gh-pages`.
 
-5. Improve formatting of chart data point tooltips: rounding values to 5 significant figures and better formatting of dates etc.
+5. Improve formatting of charts:
+   - Color cycling for consolidated charts
+   - For legend, extract common test name prefix as title
+   - Data point tooltips: rounding values to 5 significant figures and better formatting of dates etc.
+   - Addition of the `chartjs-plugin-zoom`.
+
 6. Add `commit-msg-append` option , useful for adding e.g. `[ci skip]` to commit message, but not having it as part of the test suite key in the data JSON.
 7. Removed capture of commit author/committer, since it can be obtained from the commit id/url, and just bloats the data JSON.
 8. Renamed `max-items-in-chart` -> `max-data-items`, to better describe its function of truncating the saved data during a commit.

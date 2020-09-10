@@ -89,13 +89,13 @@ footer {
   font-weight: 400;
   word-break: break-word;
   text-align: left;
-  margin-left: 10rem;
+  margin-left: 2%;
 }
 
 .benchmark-group-description {
   font-size: 1rem;
   text-align: left;
-  margin-left: 10rem;
+  margin-left: 2%;
   margin-bottom: 2rem;
 }
 
