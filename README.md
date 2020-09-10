@@ -3,20 +3,45 @@
 This is a fork of `github-action-benchmark`, optimised for `pytest-benchmark` only.
 It is hoped that eventually some/all of the features will be fed upstream:
 
-1. Allow for tests to divided into groups (see [pytest-benchmark markers](https://pytest-benchmark.readthedocs.io/en/latest/usage.html#markers)), with sub-headings.
-2. `one-chart-groups` allow for specific groups to be plotted on the same chart.
-3. Capture of CPU information (shown in tooltip), useful for cross-referencing any changes in results against.
-4. Add top-level `extra` key to captured data, which include the Python version.
-5. Round values in tooltip to 5 significant figures
-6. Add `chart-xaxis`, to allow chart x-axis to be commit date or ID
-7. Add `commit-msg-append` option , useful for adding e.g. `[ci skip]` to commit message, but not having it in results titles
-8. Removed capture of commit author/committer, since it can be obtained from the commit id/url
-9. Split original HTML index text into files in `src/assets`folder, this allows for,
-10. Add `npm run serve`, for local testing of results page
-11. Add `overwrite-assets` option, as to whether these assets should be overridden.
-12. Add `metadata` option, to capture additional information from the github action run (like dependency/docker versions).
+1. More metadata is saved about the benchmark run, for later comparison:
+   - CPU data (cores, processors, speed) is specifically saved, per commit, in the `cpu` key (uses [systeminformation](https://www.npmjs.com/package/systeminformation) npm package).
+   - The python version is extracted from the pytest-benchmark data in an `extra` key
+   - A `metadata` action option is available to save additional data
+   - This data is all shown in the data point's tooltip
 
-renamed `max-items-in-chart` -> `max-data-items`, to better describe its function
+2. The group name is saved for each test (see [pytest-benchmark markers](https://pytest-benchmark.readthedocs.io/en/latest/usage.html#markers)), or `null` if no group is given.
+   In the web-page rendering, tests are then arranged by the group they are in, which can be given a sub-heading, description, etc, and also a group can be "consolidated" into a single chart.
+
+3. A new `render-json-path` allows for a JSON file to be copied, which is used to configure the rendered web-page, e.g. for certain test suites and groups:
+
+   ```json
+    {
+        "suites": {
+            "name": {
+                "header": "Test Suite Title",
+                "description": "Description of test suite."
+            }
+        },
+        "groups": {
+            "group1": {
+                "header": "Group 1 Title",
+                "description": "Description of group 1.",
+                "single_chart": true,
+                "xAxis": "date"
+            }
+        }
+    }
+   ```
+
+4. Split original `index.html` into multiple HTML/JS files in the `src/assets` folder. This allows for easier testing and development of the output web-page.
+   This has additionally allowed for:
+   - Adding `npm run serve`, for local development of output web-page (using [light-server](https://www.npmjs.com/package/light-server))
+   - Adding `overwrite-assets` option, to specify whether any existing assets should be overridden during a commit to `gh-pages`.
+
+5. Improve formatting of chart data point tooltips: rounding values to 5 significant figures and better formatting of dates etc.
+6. Add `commit-msg-append` option , useful for adding e.g. `[ci skip]` to commit message, but not having it as part of the test suite key in the data JSON.
+7. Removed capture of commit author/committer, since it can be obtained from the commit id/url, and just bloats the data JSON.
+8. Renamed `max-items-in-chart` -> `max-data-items`, to better describe its function of truncating the saved data during a commit.
 
 ## Development Notes
 
