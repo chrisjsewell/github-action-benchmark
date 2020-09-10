@@ -61,7 +61,8 @@ Note, that this requires you place a `data.js` and `config.js` object in `src/as
 
 To "release" a GH actions version, you need to create a branch containing all the compiled JS + node_modules.
 To do this (or to update a release branch), first make sure the branch has been created,
-then you can run the script: `./scripts/prepare-release.sh branch-name`.
+then you can run the script: `./scripts/prepare-release.sh branch-name`, usually with a branch named e.g. `v2`.
+After this the branch should be tagged.
 
 ---
 
